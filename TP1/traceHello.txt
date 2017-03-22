@@ -1,0 +1,14 @@
+   /**************************************************************************/
+  /*                  Trace hello                                           */
+ /* par Remi Bourgeon   DUT INFO ASPE      TP1     le 07/O3/2017           */
+/**************************************************************************/
+
+// Redirection de stdout pour le code avec aucune erreur
+// write(1, "hello, world\n", strlen("hello, world\n"));
+hello, world
+// stderr vide
+
+// Redirection de stderr pour le code avec erreur
+// write(5, "hello, world\n", strlen("hello, world\n"));
+Probleme d'ecriture: Bad file descriptor
+// stdout vide
