@@ -1,6 +1,6 @@
    /**************************************************************************/
   /*                        lockfile.c                                      */
- /* par Remi Bourgeon   DUT INFO ASPE      TP2     le 20/O3/2017           */
+ /* par Remi Bourgeon   DUT INFO ASPE      TP2     le 24/O3/2017           */
 /**************************************************************************/
 
 #include<stdio.h>
@@ -12,28 +12,20 @@
 #include<sys/stat.h>
 #include<sys/types.h>
 
-/* Mon source me permet d'ajouter */
-
 /******************************************************************************/
-/* À propos des verrous : les prototypes des fonctions avaient trop           */
-/*   d'arguments : offset est inutile car le verrou est posé À PARTIR de la   */
-/*   position courante de l'offset. Par conséquent si le pointeur de lecture  */
-/*   est correctement positionné, il ne faut verrouiller que la taille d'une  */
-/*   structure Contact depuis le pointeur courant, et il faut déverrouiller   */
-/*   une quantité négative de la taille d'une structure depuis le pointeur    */
-/*   courant une fois l'écriture faite                                        */
+/* NON DEMANDÉ DANS LES CONSIGNES : mon programme propose la création d'un    */
+/*  fichier qui n'existe pas dont le nom est passé en paramètre               */
 ////////////////////////////////////////////////////////////////////////////////
-/* Sur le test des verrous : il est difficile de tester les verrous si le     */
-/*   programme est correctement codé. En effet, il vaut mieux verrouiller la  */
-/*   ressource qu'un minimum de temps. Par conséquent on entoure le code      */
-/*   d'écriture dans la ressource par un appel a verrouillage() et à          */
-/*   déverrouillage.                                                          */
-/*   Dans ces conditions, le temps de verrouillage est trop court pour qu'un  */
-/*   qu'un humain puisse l'intercepter. C'est pourquoi on a fait les tests en */
-/*   mettant le verrouillage AVANT le scan du contact, de manière  pouvoir    */
-/*   temporiser le programme et le verrou pendant la saisie utilisateur.      */
-/*   En revanche, le code source final est la version codée correctement, car */
-/*   je n'avais pas envie de rendre un programme mal fait.                    */
+/* Fonctions de verrouillage : on n'a pas utilisé le paramètre offset car     */
+/*   toutes les données manipulées lors de ce TP sont de même taille.         */
+/*   Par conséquent le paramètre a été commenté dans les fonctions.           */
+////////////////////////////////////////////////////////////////////////////////
+/* Test des verrous : pour permettre le test des fonctions de verrouillage    */
+/*   l'appel à verrouillage() à été positionné avant le scan du contact à     */
+/*   ajouter ou à modifier (voir les commentaires dans le corps du source).   */
+/*   cela permet de temporiser le programme et de constater le verrouillage   */
+/*   en temps humain. Après les tests les verrous ont été positionnés de      */
+/*   manière à ne verrouiller la ressource au strict nécessaire               */
 ////////////////////////////////////////////////////////////////////////////////
 /* Sur les différents types de verrou : le verrou bloquant met le processus   */
 /*   demandant un verrou en attente sur la ressource tant que l'autre verrou  */
@@ -54,7 +46,11 @@
 /* Verrou pour les fichiers ouverts en lecture :                              */
 /*   Ça ne fonctionne pas et ça produit des erreurs de verrous                */
 /*   Notamment pour la création du fichier, il faut créer le fichier, le      */
-/*   refermer et l'ouvrir à */
+/*   refermer et l'ouvrir à nouveau                                           */
+////////////////////////////////////////////////////////////////////////////////
+/* Différence F_TLOCK et F_TEST : F_TEST renvoie systématiquement à la        */
+/*    fonction appelante alors que F_TLOCK pose le verrou demandé si la       */
+/*    ressource est disponible.                                               */
 /******************************************************************************/
 
 #define BUFF_SIZE 30
