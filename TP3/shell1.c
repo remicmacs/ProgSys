@@ -60,25 +60,25 @@ int main(int argc, char** argv, char** argenv){
                         /* La commande demandée prend la place du processus fils */
                         execvp(ligne[0], ligne);
                         
-                        /* Tentative d'affichage de l'erreur : perror avait un comportement étrange */
+                        /* Tentative d'affichage de l'erreur : perror avait un comportement étrange donc on utilise printf */
                         
-                        /*switch (errno) {
+                        switch (errno) {
                         case (E2BIG):
-                        perror("Trop d'arguments");
-                        break;
+                            write(2, "Trop d'arguments\n", strlen("Trop d'arguments\n"));
+                            break;
                         case (EACCES):
-                        perror("Permission denied");
-                        break;
+                            write(2, "Permission denied\n", strlen("Permission denied\n"));
+                            break;
                         case (EINVAL):
-                        perror("Argument incorrect");
-                        break;
+                            write(2, "Argument incorrect\n", strlen("Argument incorrect\n"));
+                            break;
                         case (ENOENT):
-                        perror("No such file or directory");
-                        break;
+                            write(2, "No such file or directory\n", strlen("No such file or directory\n"));
+                            break;
                         default :
-                        perror("Erreur de commande inconnue");
-                        break;
-                    }*/
+                            write(2, "Erreur de commande inconnue\n", strlen("Erreur de commande inconnue\n"));
+                            break;
+                    }
                         exit(-1);
                     } else {
                         waitpid(child_pid, &child_status, 0);
