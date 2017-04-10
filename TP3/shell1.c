@@ -12,19 +12,24 @@
 int exitShell(char * b);
 int chDir(char * cmd);
 int exportEnv(char * cmd);
+void killZombie(pid_t child_pid_retour, pid_t child_pid, int child_status );
 
 /* Afficher l'invite de commande */
 void prompt();
 
 int main(int argc, char** argv, char** argenv){
-    pid_t child_pid;
+    pid_t child_pid = 0;
+    pid_t child_pid_retour = 0;
     int child_status;
+    setenv("INVITE", "none", 1);
     
     while(1){
+        killZombie(child_pid_retour, child_pid, child_status);
         prompt();
         char ** ligne = lis_ligne();
         
         /* On teste si on a entré une ligne vide, pour éviter de passer un tableau vide à une fonction qui essaye de lire une str dans le tableau */
+        
         if (!ligne_vide(ligne)){
             fflush(stdin);
             
@@ -81,7 +86,7 @@ int main(int argc, char** argv, char** argenv){
                     }
                         exit(-1);
                     } else {
-                        waitpid(child_pid, &child_status, 0);
+                        child_pid_retour = waitpid(child_pid, &child_status, WUNTRACED | WCONTINUED);
                     }
                 }
             }
@@ -89,15 +94,27 @@ int main(int argc, char** argv, char** argenv){
     }
     return 0;
 }
-
+void killZombie(pid_t child_pid_retour, pid_t child_pid, int child_status){
+    /* Si le retour pid du wait n'est pas le pid du child, on infanticide */
+    if (child_pid_retour != child_pid) {
+        kill(child_pid, SIGKILL);
+    }
+}
 void prompt(){
     char finPr[] = " $> ";
-    char * userName = (char * )calloc(strlen(getenv("USER")),1);
-    strcpy(userName, getenv("USER"));
-    char * userNameAt = strcat(userName, "@");
-    char * userNameAtDirectory = strcat(userNameAt, getenv("PWD"));
-    char * fullprompt = strcat(userNameAtDirectory, finPr);
-    write(1, fullprompt, strlen(fullprompt));
+    if (strcmp(getenv("INVITE"), "none") == 0) {
+        char * userName = (char * )calloc(strlen(getenv("USER")),1);
+        strcpy(userName, getenv("USER"));
+        char * userNameAt = strcat(userName, "@");
+        char * userNameAtDirectory = strcat(userNameAt, getenv("PWD"));
+        char * fullprompt = strcat(userNameAtDirectory, finPr);
+        write(1, fullprompt, strlen(fullprompt));
+    } else {
+        char * invite = getenv("INVITE");
+        char * promptPerso = strcat(invite, finPr);
+        printf("promptPerso = <%s>\n", promptPerso);
+        write(1, promptPerso, strlen(promptPerso));
+    }
     fflush(stdout);
 }
 
