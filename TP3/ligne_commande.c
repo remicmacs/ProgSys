@@ -17,6 +17,7 @@ char** lis_ligne()
 {
     int i = 0;
     int s;
+    
     do
     {
         s = read(0, buf+i, 1);

@@ -14,8 +14,6 @@ int main()
 	{
 		retourFork=fork();
 		printf("Mon PID est %d mon Pere est %d et i=%d\n",getpid(),getppid(),i);
-		//system("pstree -hl 4326");
-		
 	}
 
 	while( (pid=wait(&retourExit))>0 ) printf("Code de retour du fils %d: %d\n",pid,WEXITSTATUS(retourExit));

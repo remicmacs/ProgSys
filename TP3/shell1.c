@@ -1,3 +1,20 @@
+  /****************************************************************************//*  shell1.c  10/04/2017 TP SE ASPE                                        */
+ /*  Particularités : j'ai implémenté une primitive cd et un prompt dynamique*/
+/***************************************************************************/
+
+
+/******************************************************************************/
+/* Les primitives                                                             */
+/*  Certaines commandes doivent être gérées par le shell lui-même et pas par  */
+/*    ses enfants : par exemple pour la commande cd qui change de répertoire  */
+/*    il est possible de la faire exécuter par un execvp via un enfant.       */
+/*    mais lorsque la commande aura réussi, l'enfant meurt et le père est     */
+/*    toujours dans le même répertoire courant.                               */
+/*    C'est le même principe pour la primitive export : si on change les      */
+/*    variables d'environnement dans l'enfant, lorsque la commande est        */
+/*    finie dans l'enfant, la commande meure avec son environnement modifié   */
+/*    et l'environnement du parent est inchangé.                              */
+/******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -24,12 +41,12 @@ int main(int argc, char** argv, char** argenv){
     setenv("INVITE", "none", 1);
     
     while(1){
+        /* Tuer les zombies restants au cas où */
         killZombie(child_pid_retour, child_pid, child_status);
         prompt();
         char ** ligne = lis_ligne();
         
         /* On teste si on a entré une ligne vide, pour éviter de passer un tableau vide à une fonction qui essaye de lire une str dans le tableau */
-        
         if (!ligne_vide(ligne)){
             fflush(stdin);
             
@@ -58,6 +75,7 @@ int main(int argc, char** argv, char** argenv){
                     
                 /* Sinon on exécute la commande */
                 }else{
+                    /* L'enfant va se charger d'exécuter une commande non primitive */
                     child_pid = fork();
                     
                     // On est chez le fils
@@ -65,8 +83,7 @@ int main(int argc, char** argv, char** argenv){
                         /* La commande demandée prend la place du processus fils */
                         execvp(ligne[0], ligne);
                         
-                        /* Tentative d'affichage de l'erreur : perror avait un comportement étrange donc on utilise printf */
-                        
+                        /* Affichage de l'erreur : perror avait un comportement étrange donc on utilise write pour écrire dans le stream d'erreur directement */
                         switch (errno) {
                         case (E2BIG):
                             write(2, "Trop d'arguments\n", strlen("Trop d'arguments\n"));
@@ -83,7 +100,7 @@ int main(int argc, char** argv, char** argenv){
                         default :
                             write(2, "Erreur de commande inconnue\n", strlen("Erreur de commande inconnue\n"));
                             break;
-                    }
+                        }
                         exit(-1);
                     } else {
                         child_pid_retour = waitpid(child_pid, &child_status, WUNTRACED | WCONTINUED);
@@ -94,14 +111,17 @@ int main(int argc, char** argv, char** argenv){
     }
     return 0;
 }
+
 void killZombie(pid_t child_pid_retour, pid_t child_pid, int child_status){
     /* Si le retour pid du wait n'est pas le pid du child, on infanticide */
     if (child_pid_retour != child_pid) {
         kill(child_pid, SIGKILL);
     }
 }
+
 void prompt(){
     char finPr[] = " $> ";
+    /* Si on utilise l'invite par défaut*/
     if (strcmp(getenv("INVITE"), "none") == 0) {
         char * userName = (char * )calloc(strlen(getenv("USER")),1);
         strcpy(userName, getenv("USER"));
@@ -109,6 +129,7 @@ void prompt(){
         char * userNameAtDirectory = strcat(userNameAt, getenv("PWD"));
         char * fullprompt = strcat(userNameAtDirectory, finPr);
         write(1, fullprompt, strlen(fullprompt));
+    /* Si une invite de commande personnalisée est fixée par l'utilisateur */
     } else {
         char * invite = getenv("INVITE");
         char * promptPerso = strcat(invite, finPr);
